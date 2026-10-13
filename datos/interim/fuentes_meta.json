@@ -1,0 +1,13 @@
+{
+  "fuente_catalogo": "sgc",
+  "periodo_ajuste": [
+    "2020-03-02",
+    "2023-02-28"
+  ],
+  "n_ajuste": 30983,
+  "min_cluster_size": 154,
+  "min_samples": 10,
+  "n_fuentes": 10,
+  "n_difusa": 6344,
+  "eps_dbscan": 8.437531935293345
+}

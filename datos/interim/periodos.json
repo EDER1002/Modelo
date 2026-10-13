@@ -1,0 +1,21 @@
+{
+  "variables": [
+    "2020-03-02",
+    "2023-02-28"
+  ],
+  "objetivo": [
+    "2023-03-01",
+    "2025-03-01"
+  ],
+  "ajustado": true,
+  "cobertura_config": [
+    0.055,
+    0.832
+  ],
+  "mc": 2.0,
+  "b_regional": 1.0987766245403465,
+  "n_modelo": 21,
+  "hay_historico": false,
+  "hay_poblacion": false,
+  "fuente": "sgc"
+}

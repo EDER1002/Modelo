@@ -1,0 +1,11 @@
+codigo,fuente,tipo,n_sismos,frac_sismos,lat,lon,prof_mediana_km,prof_p10_km,prof_p90_km,radio_p90_km,mag_max,n_m4,dist_nido_ref_km,municipio_cercano
+F1,F1 · Nido de Bucaramanga (Los Santos),Nido de Bucaramanga,21347,0.689,6.787,-73.164,141.5,133.2,148.3,9.3,5.3,117,7.2,Los Santos
+F2,F2 · Intermedia (El Playón),Intermedia,667,0.0215,7.435,-73.189,133.9,120.1,143.0,20.5,3.5,0,71.3,El Playón
+F3,F3 · Nido de Bucaramanga (Zapatoca),Nido de Bucaramanga,583,0.0188,6.865,-73.315,125.4,122.1,129.1,8.5,3.2,0,24.8,Zapatoca
+F4,F4 · Intermedia (El Carmen de Chucuri),Intermedia,551,0.0178,6.552,-73.543,113.3,108.4,118.5,9.8,3.7,0,56.2,El Carmen de Chucuri
+F5,F5 · Cortical (Cimitarra),Cortical,336,0.0108,6.362,-74.189,17.9,1.9,36.0,53.3,3.4,0,129.8,Cimitarra
+F6,F6 · Intermedia (Santa Helena del Opón),Intermedia,303,0.0098,6.345,-73.606,113.1,106.0,118.9,9.5,3.6,0,75.4,Santa Helena del Opón
+F7,F7 · Intermedia (Chipatá),Intermedia,296,0.0096,6.089,-73.704,113.7,109.3,118.1,11.4,3.8,0,103.5,Chipatá
+F8,F8 · Cortical (Barrancabermeja),Cortical,201,0.0065,7.205,-73.802,30.3,19.2,38.4,34.2,2.4,0,89.6,Barrancabermeja
+F9,F9 · Intermedia (Girón),Intermedia,200,0.0065,7.113,-73.369,116.7,108.7,124.5,20.4,2.9,0,45.7,Girón
+F10,F10 · Cortical (Hato),Cortical,155,0.005,6.566,-73.376,12.1,0.0,29.7,43.6,3.6,0,40.1,Hato
