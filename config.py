@@ -20,6 +20,7 @@ INTERIM = DATOS / "interim"
 PROCESSED = DATOS / "processed"
 SALIDAS = RAIZ / "salidas"
 DOCS = RAIZ / "docs"
+MODELO = RAIZ / "modelo"                 # modelo entrenado en JSON (lo usa usar_modelo.py)
 
 # ----------------------------------------------------------------------------
 # Zona de estudio

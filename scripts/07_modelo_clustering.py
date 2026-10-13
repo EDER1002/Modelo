@@ -48,8 +48,10 @@ Xt = ds[vars_m].astype(float).copy()
 for v in vars_m:
     if trans.get(v) == "log1p":
         Xt[v] = np.log1p(Xt[v].clip(lower=0))
-Xt = Xt.fillna(Xt.median())
-Xz = StandardScaler().fit_transform(Xt)
+medianas = Xt.median()
+Xt = Xt.fillna(medianas)
+escalador = StandardScaler().fit(Xt)
+Xz = escalador.transform(Xt)
 n = len(Xz)
 rng = np.random.default_rng(C.SEMILLA)
 pca_full = PCA(n_components=0.90, random_state=C.SEMILLA).fit(Xz)
@@ -256,6 +258,39 @@ ds.sort_values(["nivel_ord", "indice_riesgo"], ascending=False)[salida_cols].to_
     S / "municipios_clasificados.csv", index=False)
 
 # ----------------------------------------------------------------------------
+# Modelo portable (JSON): escalador + centroides. K-Means asigna cada municipio al centroide más cercano,
+# así que con esto se clasifica sin scikit-learn ni pickles (no depende de la versión instalada).
+# Lo usa usar_modelo.py.
+# ----------------------------------------------------------------------------
+C.MODELO.mkdir(parents=True, exist_ok=True)
+modelo_json = {
+    "descripcion": "K-Means (nivel 2) sobre variables sísmicas por municipio de Santander. Para clasificar: "
+                   "aplicar 'transformacion' (log1p) a cada variable, rellenar faltantes con 'medianas', "
+                   "estandarizar z = (x - media) / escala y asignar el centroide más cercano (distancia euclidiana).",
+    "generado": pd.Timestamp.now().isoformat(timespec="seconds"),
+    "catalogo": per.get("fuente", "sgc"),
+    "periodo_variables": per.get("variables"), "periodo_objetivo": per.get("objetivo"),
+    "periodos_ajustados_a_datos": per.get("ajustado"), "mc": per.get("mc"),
+    "radio_influencia_km": C.RADIO_INFLUENCIA_KM, "k": k,
+    "silueta": float(fila_final["silueta"]), "estabilidad_ari": float(fila_final["ari_media"]),
+    "spearman_validacion": float(rho_niv),
+    "variables": vars_m,
+    "transformacion": {v: trans.get(v, "—") for v in vars_m},
+    "medianas": {v: float(medianas[v]) for v in vars_m},
+    "media": dict(zip(vars_m, map(float, escalador.mean_))),
+    "escala": dict(zip(vars_m, map(float, escalador.scale_))),
+    "centroides": modelo.cluster_centers_.round(6).tolist(),
+    "nivel_por_centroide": [nivel_de[g_] for g_ in range(k)],
+    "niveles_ordenados": nombres,
+    "colores_niveles": color_nivel,
+}
+escribir(C.MODELO / "modelo_kmeans.json", json.dumps(modelo_json, ensure_ascii=False, indent=2))
+# prueba: el JSON reproduce exactamente la clasificación del modelo
+zt = (Xt.to_numpy() - escalador.mean_) / escalador.scale_
+chk = np.argmin(((zt[:, None, :] - modelo.cluster_centers_[None]) ** 2).sum(-1), axis=1)
+assert (chk == modelo.labels_).all(), "El modelo JSON no reproduce la clasificación"
+
+# ----------------------------------------------------------------------------
 # Figuras
 # ----------------------------------------------------------------------------
 plt = estilo_figuras()
@@ -408,6 +443,8 @@ import folium  # noqa: E402
 
 cen = contorno.geometry.iloc[0].centroid
 mapa = folium.Map(location=[cen.y, cen.x], zoom_start=8, tiles="OpenStreetMap", control_scale=True)
+bx = contorno.total_bounds
+mapa.fit_bounds([[bx[1], bx[0]], [bx[3], bx[2]]], padding=(10, 10))
 campos = [("municipio", "Municipio"), ("nivel", "Nivel"), ("indice_riesgo", "Índice (0–100)"),
           ("sacudida_pct", "Energía sísmica que llega (% del municipio más sacudido)"),
           ("tasa_sismos_r30", "Sismos/año a ≤ 30 km (M ≥ Mc)"), ("tasa_fuertes_r30", "Sismos M ≥ 4/año a ≤ 30 km"),
@@ -441,8 +478,8 @@ fuertes = fuertes[fuertes["mag"] >= C.MAG_FUERTE]
 capa = folium.FeatureGroup(name=f"Sismos M ≥ {C.MAG_FUERTE:g} del periodo de variables ({len(fuertes)})", show=True)
 for _, r in fuertes.iterrows():
     t = r.get("fuente_tipo") if isinstance(r.get("fuente_tipo"), str) else "Difusa (ruido)"
-    folium.CircleMarker([r["lat"], r["lon"]], radius=2.5 + 3 * (r["mag"] - C.MAG_FUERTE), color="white", weight=0.8,
-                        fill=True, fill_color=COLOR_TIPO_FUENTE.get(t, TINTA_SUAVE), fill_opacity=0.9,
+    folium.CircleMarker([r["lat"], r["lon"]], radius=2.5 + 3 * (r["mag"] - C.MAG_FUERTE), color="white", weight=0.4,
+                        fill=True, fill_color=COLOR_TIPO_FUENTE.get(t, TINTA_SUAVE), fill_opacity=0.85,
                         tooltip=f"M {r['mag']:.1f} · {r['prof_km']:.0f} km · {r['fecha_utc']:%Y-%m-%d} · "
                                 f"{r.get('fuente', '')}").add_to(capa)
 capa.add_to(mapa)
@@ -482,6 +519,21 @@ caja = f"""
 mapa.get_root().html.add_child(folium.Element(caja))
 folium.LayerControl(collapsed=False).add_to(mapa)
 mapa.save(S / "mapa_riesgo_santander.html")
+
+# ----------------------------------------------------------------------------
+# Archivos livianos para la API (api.py): GeoJSON con niveles y sismos M >= 3 bien localizados
+# ----------------------------------------------------------------------------
+gj_api = g[["cod_mpio", "municipio", "zona_foco", "nivel", "nivel_ord", "color", "indice_riesgo",
+            "nivel_segun_indice", "lat", "lon", "geometry"] + vars_m + ["obj_tasa_fuertes_futura_r50"]].copy()
+gj_api["zona_foco"] = gj_api["zona_foco"].astype(str).str.lower() == "true"
+gj_api["geometry"] = gj_api.geometry.simplify(0.002, preserve_topology=True)
+gj_api.to_file(S / "municipios_niveles.geojson", driver="GeoJSON")
+ruta_cm = C.PROCESSED / "catalogo_con_municipio.csv"
+if ruta_cm.exists():
+    cm = pd.read_csv(ruta_cm, parse_dates=["fecha_utc"], low_memory=False, dtype={"cod_mpio": str})
+    cm = cm[(cm["mag"] >= 3.0) & ~cm["mala_localizacion"].astype(bool)]
+    cm[["id_evento", "fecha_utc", "lat", "lon", "prof_km", "mag", "mag_tipo", "fuente_codigo", "fuente_tipo",
+        "cod_mpio", "municipio", "region", "periodo"]].to_csv(S / "sismos_relevantes.csv", index=False)
 
 # ----------------------------------------------------------------------------
 # Reporte
