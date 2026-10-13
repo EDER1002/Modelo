@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Catálogos grandes que run_all.py regenera en ~1 minuto
+datos/interim/catalogo_sgc_unificado.csv
+datos/interim/catalogo_con_fuente.csv
+datos/processed/catalogo_con_municipio.csv
+
+# Descargas automáticas del USGS (se vuelven a bajar con --usgs)
+datos/raw/usgs/usgs_*.csv
+
+# Archivos temporales de Excel / sistema
+~$*
+.DS_Store

@@ -1,0 +1,5 @@
+# Solo para SERVIR el modelo ya entrenado (python api.py). Para re-entrenar: requirements.txt
+fastapi>=0.110
+uvicorn>=0.29
+pandas>=2.2
+numpy>=1.26

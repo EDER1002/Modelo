@@ -1,0 +1,8 @@
+{
+  "lat": 6.788,
+  "lon": -73.166,
+  "prof_km": 141.3,
+  "n_sismos": 21930,
+  "origen": "HDBSCAN (mediana de los sismos de la fuente Nido)",
+  "dist_a_referencia_km": 7.4
+}

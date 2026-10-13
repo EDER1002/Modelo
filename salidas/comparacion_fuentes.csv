@@ -1,0 +1,4 @@
+metodo,n_fuentes,pct_difusa,silueta,davies_bouldin,calinski_harabasz,mezcla_profundidad,parametros
+HDBSCAN,10,20.5,0.588,0.586,5702.0,0.0,"min_cluster_size=154, min_samples=10"
+K-Means,10,0.0,0.339,0.904,5388.0,0.001,k=10 (el mismo número de fuentes que HDBSCAN)
+DBSCAN,18,4.3,0.471,0.485,104.0,0.0,"eps=8.4 km (codo k-distancia), min_samples=10"

@@ -20,6 +20,7 @@ INTERIM = DATOS / "interim"
 PROCESSED = DATOS / "processed"
 SALIDAS = RAIZ / "salidas"
 DOCS = RAIZ / "docs"
+MODELO = RAIZ / "modelo"                 # modelo entrenado en JSON (lo usa usar_modelo.py)
 
 # ----------------------------------------------------------------------------
 # Zona de estudio
@@ -53,11 +54,17 @@ FECHA_FIN = "2025-12-31"
 # entrada (son observaciones distintas) y además sirve para mostrar capacidad de anticipar.
 PERIODO_VARIABLES = ("2006-01-01", "2020-12-31")
 PERIODO_OBJETIVO = ("2021-01-01", "2025-12-31")
+# Si los exports de datos/raw/sgc/ no cubren esos periodos (p. ej. solo 2020-03 a 2025-03), el pipeline
+# parte el rango que SÍ hay: el último 40 % del tiempo es el objetivo y lo anterior las variables
+# (siguen sin solaparse). Cuando metas los Excel 2006–2025, vuelve solo a los periodos de arriba.
+# Los periodos usados quedan escritos en el reporte. Pon False para obligar los de arriba.
+AJUSTAR_PERIODOS_A_DATOS = True
+FRACCION_OBJETIVO = 0.4
 
 # ----------------------------------------------------------------------------
 # Metadatos de origen (LLENAR: la rúbrica exige fecha de descarga y filtros)
 # ----------------------------------------------------------------------------
-FECHA_DESCARGA_SGC = None          # p. ej. "2026-10-14"
+FECHA_DESCARGA_SGC = "2026-10-13"  # Csg_2020…Csg_2024.xlsx (fecha de creación que trae cada .xlsx)
 FECHA_DESCARGA_HISTORICO = None    # fecha en que bajaste sismicidad_historica.xls
 FECHA_DESCARGA_POBLACION = None    # fecha en que bajaste el Excel de población DANE
 
@@ -78,6 +85,9 @@ PROF_MAX_VALIDA_KM = 300.0         # el slab bajo Santander no pasa de ~200 km
 # estaciones, no la amenaza); se usan para marcar sismos mal localizados (~10 % en 2024).
 GAP_MAX = 270                      # brecha azimutal (°) mayor = epicentro mal restringido
 RMS_MAX_S = 1.2                    # residuo medio (s)
+RMS_EXENTO_DESDE_M = 3.0           # el criterio de RMS no se aplica a M >= 3: los sismos grandes los registran
+                                   # estaciones lejanas y su RMS sube aunque estén bien localizados (en 2020–2025,
+                                   # 33 % de los M >= 4 tenía RMS > 1.2 s con error de profundidad mediano de 4 km)
 ERROR_H_MAX_KM = 10.0              # error horizontal (máx. de lat/long)
 ERROR_PROF_MAX_KM = 10.0           # error de profundidad
 FASES_MIN = 6                      # mínimo de fases usadas en la localización
@@ -112,5 +122,6 @@ RADIO_NIDO_KM = 40                 # una fuente cuyo centro está a <= 40 km del
 # ----------------------------------------------------------------------------
 SEMILLA = 42
 K_MIN, K_MAX = 2, 8                # rango de grupos a evaluar
-K_SELECCION = (3, 6)               # rango permitido para el modelo final (interpretable)
+K_SELECCION = (3, 5)               # rango permitido para el modelo final (interpretable; máx. 5 niveles:
+                                   # con 6 tonos de un mismo color dos niveles vecinos no se distinguen en el mapa)
 N_BOOTSTRAP = 30                   # remuestreos para medir estabilidad de los grupos
